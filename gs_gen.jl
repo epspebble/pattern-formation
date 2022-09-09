@@ -1,7 +1,61 @@
+"""
+    Solution generator for the Gray-Scott pattern-forming system.
+
+    Julia packages required: DifferentialEquations, Sundials, NetCDF
+
+    Command line usage of this script:
+
+    Syntax #1:
+
+    >>> julia gs_gen.il [tf] [F] [k]
+
+        where [tf] = the time value to which we evolve the Gray-Scott system to
+              [F] = the "fill" rate, e.g. F = 0.0620
+              [k] = the "kill" rate, e.g. k = 0.0630
+    
+    A NetCDF file will be saved to contain the simulation results.
+
+    Example:
+
+    >>> julia gs_gen.jl 10000 0.0620 0.0630
+
+    generates the output in "gs_F=0.123_k=0.2_tf=10000.0.nc" located in the current folder.
+
+    For a gallery of possible pattern with their F, k values, see http://www.mrob.com/pub/comp/xmorphia/.
+
+
+    To specify also the diffusion constants, use the syntax:
+
+    Syntax #2:
+
+    >>> julia gs_gen.jl [tf] [F] [k] [Du] [Dv]
+
+        where [Du] and [Dv] are the diffusivities for the U and V components.
+
+    The built-in values are Du = 0.2097 and Dv = 0.1050 which come from this project:
+    
+    https://github.com/pmneila/jsexp/blob/master/grayscott/index.html
+
+    However, Robert Munafo's project, as well as the Pearson's paper on Science both use 
+    much smaller Du and Dv values: Du = 2e-5, Dv = 1e-5 according the scientific summary 
+    in this paper: http://www.mrob.com/sci/papers/munafo2014-1218.pdf
+
+"""
+
 const tf = parse(Float64, ARGS[1])
 const F = parse(Float64, ARGS[2])
 const k = parse(Float64, ARGS[3])
-const Du, Dv = 0.2097, 0.1050
+
+if length(ARGS) > 3
+    @assert length(ARGS) == 5
+    const Du = parse(Float64, ARGS[4])
+    const Dv = parse(Float64, ARGS[5])
+    custom_D = true # only used to determine filename for output
+else
+    const Du, Dv = 0.2097, 0.1050
+    custom_D = false
+end
+
 println("Setting up Gray-Scott system with F = $(F), k = $(k), Du = $(Du), Dv = $(Dv)...")
 
 @time begin
@@ -56,7 +110,12 @@ end # Done setting up.
 println("Solving for t in $tspan...")
 @time sol = solve(prob, CVODE_BDF(linear_solver=:GMRES))
 
-filename="gs_F=$(F)_k=$(k)_tf=$(tf).nc"
+if custom_D
+    filename="gs_F=$(F)_k=$(k)_tf=$(tf)_Du=$(Du)_Dv=$(Dv).nc"
+else
+    filename="gs_F=$(F)_k=$(k)_tf=$(tf).nc"
+end 
+  
 varname = "u"
 
 println("Saving $varname to $filename ...")
@@ -71,7 +130,8 @@ println("Saving $varname to $filename ...")
         
     attribs = Dict("data_min" => 0.0, "data_max" => 1.0)
     nccreate(filename,varname,"t", t, "x", dom, "y", dom, atts=attribs)
-    ncwrite(u,filename,varname)
+    
+    ncwrite(u,filename,varname) # could annotate with PDE parameters here.
 
     # Get ready for garbage collection.
     sol = Nothing
