@@ -1,3 +1,0 @@
-SLURM_ARRAY_TASK_ID=13
-PARCMD="sed -n '${SLURM_ARRAY_TASK_ID}p' run3.par"
-echo $PARCMD
