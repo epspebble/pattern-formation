@@ -32,7 +32,8 @@
 
         where [Du] and [Dv] are the diffusivities for the U and V components.
 
-    The built-in values are Du = 0.2097 and Dv = 0.1050 which come from this project:
+    The built-in values are Du = 0.2 and Dv = 0.1 which come from this project, which is close
+    to that found in the following project (Du = 0.2097, Dv = 0.1050):
     
     https://github.com/pmneila/jsexp/blob/master/grayscott/index.html
 
@@ -52,7 +53,8 @@ if length(ARGS) > 3
     const Dv = parse(Float64, ARGS[5])
     custom_D = true # only used to determine filename for output
 else
-    const Du, Dv = 0.2097, 0.1050
+    #const Du, Dv = 0.2097, 0.1050
+    const Du, Dv = 0.2, 0.1
     custom_D = false
 end
 
