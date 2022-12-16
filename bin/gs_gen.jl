@@ -110,30 +110,32 @@ end # Done setting up.
 
 
 println("Solving for t in $tspan...")
-@time sol = solve(prob, CVODE_BDF(linear_solver=:GMRES))
+@time sol = solve(prob, CVODE_BDF(linear_solver=:GMRES),saveat=0:100:tf)
 
 if custom_D
     filename="gs_F=$(F)_k=$(k)_tf=$(tf)_Du=$(Du)_Dv=$(Dv).nc"
 else
     filename="gs_F=$(F)_k=$(k)_tf=$(tf).nc"
 end 
-  
-varname = "u"
 
-println("Saving $varname to $filename ...")
+println("Saving data to $filename ...")
 @time begin
     # Copy
     t = sol.t
     M = length(sol.t)
     u = zeros(M,N,N)
+    #v = zeros(M,N,N)
     for i in range(1,M)
         u[i,:,:] = sol.u[i][:,:,1]
+	#v[i,:,:] = sol.u[i][:,:,2]
     end
         
     attribs = Dict("data_min" => 0.0, "data_max" => 1.0)
-    nccreate(filename,varname,"t", t, "x", dom, "y", dom, atts=attribs)
-    
-    ncwrite(u,filename,varname) # could annotate with PDE parameters here.
+    nccreate(filename,"u","t", t, "x", dom, "y", dom, atts=attribs)
+    #nccreate(filename,"v","t", t, "x", dom, "y", dom, atts=attribs)    
+    ncwrite(t,filename,"t")
+    ncwrite(u,filename,"u") # could annotate with PDE parameters here.
+    #ncwrite(v,filename,"v") # could annotate with PDE parameters here.
 
     # Get ready for garbage collection.
     sol = Nothing
