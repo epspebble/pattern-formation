@@ -1,5 +1,5 @@
 """
-    Solution generator for the Gray-Scott pattern-forming system.
+    solution generator for the Gray-Scott pattern-forming system.
 
     Julia packages required: DifferentialEquations, Sundials, NetCDF
 
@@ -47,6 +47,8 @@ const tf = parse(Float64, ARGS[1])
 const F = parse(Float64, ARGS[2])
 const k = parse(Float64, ARGS[3])
 
+const ts = 100 # interval width between data points to save.
+
 if length(ARGS) > 3
     @assert length(ARGS) == 5
     const Du = parse(Float64, ARGS[4])
@@ -61,7 +63,7 @@ end
 println("Setting up Gray-Scott system with F = $(F), k = $(k), Du = $(Du), Dv = $(Dv)...")
 
 @time begin
-    using DifferentialEquations, Sundials, NetCDF
+    using DifferentialEquations, Sundials
 
     const dx = 1/102 # grid spacing
     const dt = 1. # timestep
@@ -110,35 +112,41 @@ end # Done setting up.
 
 
 println("Solving for t in $tspan...")
-@time sol = solve(prob, CVODE_BDF(linear_solver=:GMRES),saveat=0:100:tf)
+@time sol = solve(prob, CVODE_BDF(linear_solver=:GMRES),saveat=0:ts:tf)
 
 if custom_D
-    filename="gs_F=$(F)_k=$(k)_tf=$(tf)_Du=$(Du)_Dv=$(Dv).nc"
+    fn="gs_F=$(F)_k=$(k)_tf=$(tf)_Du=$(Du)_Dv=$(Dv).nc"
 else
-    filename="gs_F=$(F)_k=$(k)_tf=$(tf).nc"
+    fn="gs_F=$(F)_k=$(k)_tf=$(tf).nc"
 end 
 
-println("Saving data to $filename ...")
+println("Saving data to $fn...")
 @time begin
-    # Copy
-    t = sol.t
-    M = length(sol.t)
-    u = zeros(M,N,N)
-    #v = zeros(M,N,N)
-    for i in range(1,M)
-        u[i,:,:] = sol.u[i][:,:,1]
-	#v[i,:,:] = sol.u[i][:,:,2]
-    end
-        
-    attribs = Dict("data_min" => 0.0, "data_max" => 1.0)
-    nccreate(filename,"u","t", t, "x", dom, "y", dom, atts=attribs)
-    #nccreate(filename,"v","t", t, "x", dom, "y", dom, atts=attribs)    
-    ncwrite(t,filename,"t")
-    ncwrite(u,filename,"u") # could annotate with PDE parameters here.
-    #ncwrite(v,filename,"v") # could annotate with PDE parameters here.
 
-    # Get ready for garbage collection.
-    sol = Nothing
-    u = Nothing
-    t = Nothing 
+using NCDatasets
+ds = Dataset(fn,"c")
+ds.attrib["comments"]="Gray-Scott simulation dataset for F=$(F), k=$(k), for t=0 to t=$(tf), saved at $(ts) intervals."
+
+# Dimensional Variables.
+defVar(ds,"t",sol.t, ("t",))
+defVar(ds,"x",dom,("x",))
+defVar(ds,"y",dom,("y",))
+
+# Write our pattern data
+u = defVar(ds,"u",Float64,("t","x","y"))
+u.attrib["min"] = 0.0
+u.attrib["max"] = 1.0
+
+v = defVar(ds,"v",Float64,("t","x","y"))
+v.attrib["min"] = 0.0
+v.attrib["max"] = 1.0
+
+
+for i in range(1,length(sol.t))
+    u[i,:,:] = sol.u[i][:,:,1]
+    v[i,:,:] = sol.u[i][:,:,2]
+end
+    
+close(ds)
+
 end
