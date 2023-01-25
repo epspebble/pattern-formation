@@ -3,58 +3,108 @@ clc
 clearvars
 clf
 % main program for the agent-based model of zebrafish pattern formation
-% load pameters
-zebra_pars_abm15
+% L = 318;
+% omega = 25;
+% l = 75;
+% 
+% xi = 1.2;
+% pdeath = 0.0333;
+% Ndiff = 1; %
+% 
+% dcrowd = 82;
+% phi = 1.3;
+% psi = 1.2;
+% 
+% drand = 100;
+% pm = 0.03;
+% px = 0.005;
+
+
+% other parameters
+ntype = 2;
+
+
+domx = 2000; % initialize domain
+domy = 1000; %initialize domain
+totd = 50;
+domxt = 130; %(16-domx/1000)*10^3/totd; % 7 is the initial size, 16 is the destinate size
+domyt = 130;% (3-domy/1000)*10^3/totd; % 1 is the initial size, 16 is the destinate size
+
+rm = 20; % mphos
+rx =  20; % dense xphos
+rall = [rm, rx];
+
+
+
+gamma_loc = 75;
+gamma_long_inner = 318;
+gamma_long_outer = gamma_long_inner + 25;
+gammas = [gamma_loc, gamma_long_inner,gamma_long_outer];
+
+% par for death
+mu = 1;
+nu = 1;
+psi = 1.2;
+p_d = 0.0333;
+dpar = [mu,nu,psi,p_d];
+
+% par for birth/differentiation 
+alpha = 1;
+beta = 3.5;
+eta = 6;
+
+d_crowd = 82;
+
+phi_1 = 1.3;
+phi_2 = 1.2;
+kappa = 10;
+
+d_rand = 100;
+par_birth = [alpha, beta, eta, d_crowd, phi_1, phi_2, kappa, d_rand];
+
+
+
+
+
 
 % set random seed
 % rng(2)
     
 % location of horizontal myoseptum, the yellow strip
 hmwidth = 100; % width of hm
-iymin = (Dwidth-hmwidth)/2;
+iymin = (domx-hmwidth)/2;
 iymax = iymin + hmwidth;
 
-hmloc = [0+rx Dlength-rx iymin iymax];
+hmloc = [0+rx domx-rx iymin iymax];
 
 %%% initialization
 
-% position of each cell at the initial step, 2022 a single cell?
-xpm_1 = (rall(1)/2:(rall(1)*2+40):Dlength)'; 
-xpm_2 = (rall(1)/2:(rall(1)*2+40):Dlength)';
-xpm_3 = (rall(1)/2:(rall(1)*2+40):Dlength)';
-xpm_4 = (rall(1)/2:(rall(1)*2+40):Dlength)';
-pm = [xpm_1, ones(size(xpm_1))*(rall(1)*2+10); xpm_2, ones(size(xpm_2))*(Dwidth/2-rall(2)*2-20); xpm_3, ones(size(xpm_3))*(Dwidth/2+rall(2)*2+20); xpm_4, ones(size(xpm_4))*(Dwidth-rall(1)*2);];
-%px = hmcellpos(hmloc); 
-xpx = (rall(2)/2:(rall(2)*2+5):Dlength)';
-px = [xpx, ones(size(xpx))*Dwidth/2];
+% position of each cell at the initial step
+xpm_1 = (rall(1)/2:(rall(1)*2+20):domx)'; % 34 cells
+xpm_2 = (rall(1)/2:(rall(1)*2+20):domx)';
+xpm_3 = (rall(1)/2:(rall(1)*2+20):domx)';
+xpm_4 = (rall(1)/2:(rall(1)*2+20):domx)';
+pm = [xpm_1, ones(size(xpm_1))*(rall(1)*2+1); xpm_2, ones(size(xpm_2))*(domy/2-rall(2)*2-20); xpm_3, ones(size(xpm_3))*(domy/2+rall(2)*2+20); xpm_4, ones(size(xpm_4))*(domy-rall(1)*2);];
 
-% we put a strip of dense iphos in the horizontal myoseptum region
-% maxinit = 3000;%floor(hmwidth/(2*rx)*Dlength/(2*rx)); % maximum number of xphores initialized in the hm
-% initnid = randi([10 maxinit],1); % the two numbers are the minimum and maximum number of cells on the horizontal myoseptum
-% for i=1:initnid
-%     newpos = hmcellpos(hmloc);
-%     if nooverlap_test(newpos,px,rx,rx*ones(size(px,1),1))
-%         px = [px;newpos]; % n by 2
-%     end
-% end
+xpx = (rall(2)/2:(rall(2)*2)-0.5:domx)'; % 51 cells
+px = [xpx, ones(size(xpx))*domy/2];
+% size(xpx)
 
-
-
-% colr = [0 0 0];
-% f1 = axes;
-% plotcells(pm,rm,colr,0.3,f1);
-% hold on
-% colr = [1 0.65 0];
-% plotcells(px,rx,colr,0.3,f1);
-% axis equal
-% axis([0 Dlength 0 Dwidth])
+colr = [0 0 0];
+f1 = axes;
+plotcells(pm,rm,colr,0.3,f1);
+hold on
+colr = [1 0.65 0];
+plotcells(px,rx,colr,0.3,f1);
+axis equal
+axis([0 domx 0 domy])
 %%
 clc
 %%%%%%%% Store all of the information for ploting purpose later
-S(1).domsize = [Dlength, Dwidth];
+S(1).domsize = [domx, domy];
 S(1).pos = {pm,px};
-domx = Dlength;
-domy = Dwidth;
+domx = domx;
+domy = domy;
 
 celltype = {'m','x'};
 for indt = 1:totd+1
@@ -70,7 +120,7 @@ for indt = 1:totd+1
     % update cell movement
     for indi = 1:ntype
         if ~isempty(nposall{indi}) % if there are nonzero number of type indi cells
-            nposall{indi} = fnmove(domx,domy,nposall{1},nposall{2},rall,nall,indi); % need to be modified to take "nposall{1},nposall{2}" automatically
+            nposall{indi} = fnmove(domx,domy,nposall{1},nposall{2},rall,nall,indi); 
         end
     end
     
@@ -78,28 +128,22 @@ for indt = 1:totd+1
 %     % update cell birth/division
     nbpos = cell(1,ntype);
     for indi = 1:ntype
-        nbpos{indi} = fnbirth(domx,domy,pm,px,rall,indi,par_birth,dpar); % output are lists of positions of newly created cells
+        nbpos{indi} = fnbirth(domx,domy,pm,px,rall,indi,par_birth,gammas,indt);
     end
-% 
-%     
+    
 %     % update cell death 
 %     % return the indexes of cell that undergo cell death
     indxdth = cell(1,ntype);
     for indi = 1:ntype
-        indxdth{indi} = fndeath(pm,px,rall,celltype{indi},gammas,dpar);
+        indxdth{indi} = fndeath(pm,px,rall,indi,gammas,dpar);
     end
     
    
 %     
-%     % after all calculations, update the status of each type of cells
+%   % after all calculations, update the status of each type of cells
     indxcov_new = cell(1,ntype);
     cov_pos = cell(1,ntype);
     cov_to = [1 3 2 5 4];
-%     for indi = 2:ntype
-%         indxcov_new{indi} = setdiff(indxcov{indi},indxdth{indi}); % to account for cell conversion, remove cells undergo death
-%         nposall{cov_to(indi)} = [nposall{cov_to(indi)}; nposall{indi}(indxcov_new{indi},:)];
-%         indxdth{indi} = union(indxdth{indi},indxcov{indi}); % remove all cells that undergo conversion and cell death
-%     end
 
     for indi = 1:ntype
         tempposi = nposall{indi};
@@ -123,8 +167,6 @@ for indt = 1:totd+1
     strx = domx/(domx-domxt); % stretch rate, minus the growth of one day, compared with the previous day
     stry = domy/(domy-domyt);
     
-    % NOTE HERE WE ASSUME THE RADIUS OF EACH IS NOT GROWING AS DOMAIN
-    % GROWS!!!
     % stretching effects of cell locations due to domain growth 
     pm = pm .* repmat([strx, stry],size(pm,1),size(pm,2)/2); % the the 3rd argument of repmat is artificial to ensure this works for empty pm
     px = px .* repmat([strx, stry],size(px,1),size(px,2)/2);
@@ -154,7 +196,7 @@ for indt = 1:plt
         plot([0 S(indt).domsize(1)],[0 0],'b');
         plot([0 S(indt).domsize(1)],[S(indt).domsize(2) S(indt).domsize(2)],'b');
         axis equal
-        axis([0 5000 0 4000]);
+        %axis([0 5000 0 4000]);
     end
     pause(0.2)
     hold off

@@ -6,7 +6,7 @@ function force = Qkl(pt, plist, Rkl, rkl, Akl, akl)
 % Lkl: characteristic length between the two types of cells
 % epskl: force strength of the two types of cells
 
-% Q-function in Volkening-2015
+% Q-function 
 force = zeros(1,2);
 if ~isempty(plist)
     dkl = plist-pt; % n by 2 matrix

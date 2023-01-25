@@ -1,7 +1,8 @@
-function indxtypei = fndeath(pm,px,rall,flag,gammas,dpar)
+function indxtypei = fndeath(pm,px,rall,indc,gammas,dpar)
 % input: 2 lists of cell locations, radius of each type of cell, flag
 % indicates which cell death we are looking at
 
+% return a list of cell index to be eliminated 
 gamma_loc = gammas(1);
 gamma_long_inner = gammas(2);
 gamma_long_outer = gammas(3);
@@ -14,7 +15,7 @@ p_d = dpar(4);
 
 indxtypei = [];
 
-if strcmp(flag,'m')
+if indc == 1
 
     for indi=1:size(pm,1)
         % effect of xphores on mphore death, short distance
@@ -34,7 +35,7 @@ if strcmp(flag,'m')
             indxtypei = [indxtypei,indi];
         end
     end
-elseif strcmp(flag,'x')
+elseif indc == 2
 
     for indi=1:size(px,1)
         % effect of mphores on xphore death

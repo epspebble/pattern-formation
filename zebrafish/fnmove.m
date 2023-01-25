@@ -2,54 +2,34 @@ function newpos = fnmove(domx,domy,pm,px,rall,nall,indx)
 % pm: position of all m cells
 % px: position of all x cells
 % indx: the indx-th cell of the current cell type
-% 
-Rxm = 10000;
-rxm = 15;
-Axm = 10;
-axm = 10;
+
+Rxm = 11000;
+rxm = 20;
+Axm = 0;
+axm = 1;
 
 
 Rmm = 5000;
-rmm = 13;
-Amm = 10;
-amm = 10;
+rmm = 20;
+Amm = 0;
+amm = 1;
 
-
-Rmx = 3000;
-rmx = 20;
-Amx = 1500;
-amx = 3;
-
+Rmx = 6000;
+Amx = Rmx-1600;
+amx = 9;
+rmx = (Rmx*amx)/(Amx-200*amx);
 
 Rxx = 2000;
 rxx = 10;
-Axx = 10;
-axx = 10;
-
+Axx = 0;
+axx = 1;
 
 
 dt = 1;
 
-% length of nalls is the total number of cells
-% nalls contains cell radius for all cells
-%nalls 
-
-
 allposcell = {pm,px};
 curtype = allposcell{indx}; % current type, n by 2
 newpos = zeros(size(curtype));
-
-if indx == 1 
-    allpos = [pm];
-    % nalls = repelem(rall(1),nall(1)).'; % every elements in vector rall get repeated nall(1) times
-elseif indx == 2 
-    allpos = [px];
-    % nalls = repelem(rall(2),nall(2).');
-end
-
-
-% location of each type of cells in each layer
-locs = {1:nall(1),nall(1)+1:sum(nall(1:2))}; 
 
 % update cell movement in arbitary order
 randorder = 1:size(curtype,1);
@@ -72,7 +52,7 @@ for ind = 1:size(curtype,1)
     if indx == 1
         % movement of m cells
         % When distance = Lmm, force = 0; if dist < Lmm, force >0
-        Fmm = Qkl(cellipos, noipos, Rmm, rmm, Amm, amm); % short range?
+        Fmm = Qkl(cellipos, noipos, Rmm, rmm, Amm, amm); 
         Fxm = Qkl(cellipos, px, Rxm, rxm, Axm, axm);
         diffpos = -sum(Fmm,1) - sum(Fxm,1);
         
@@ -83,7 +63,7 @@ for ind = 1:size(curtype,1)
     end
     
     % first update the location of the current cell
-    ncelli = cellipos + diffpos*dt; % dt should be 1
+    ncelli = cellipos + diffpos*dt; 
   
     % if the new location overlaps with other cell, consider shorten the
     % distance of movement
