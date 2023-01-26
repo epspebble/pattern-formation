@@ -7,12 +7,17 @@ function force = Qkl(pt, plist, Rkl, rkl, Akl, akl)
 % epskl: force strength of the two types of cells
 
 % Q-function 
-force = zeros(1,2);
+
+%force = zeros(1,2); %overwritten 
+
+force = zeros(size(plist));
 if ~isempty(plist)
-    dkl = plist-pt; % n by 2 matrix
+    dkl = plist - pt; % n by 2 matrix
     x = dkl(:,1);
     y = dkl(:,2);
-    Qx = -Rkl*exp(-sqrt(x.^2+y.^2)/rkl)*2.*x/(2*rkl*sqrt(x.^2+y.^2))+Akl*exp(-sqrt(x.^2+y.^2)/akl)*2.*x/(2*akl*sqrt(x.^2+y.^2)); % x-component of the gradient
-    Qy = -Rkl*exp(-sqrt(x.^2+y.^2)/rkl)*2.*y/(2*rkl*sqrt(x.^2+y.^2))+Akl*exp(-sqrt(x.^2+y.^2)/akl)*2.*y/(2*akl*sqrt(x.^2+y.^2)); % y-component of the gradient
-    force = [Qx(:),Qy(:)];
+    
+    Qx = -Rkl*exp(-sqrt(x.^2+y.^2)/rkl)*2.*x./(2*rkl*sqrt(x.^2+y.^2))+Akl*exp(-sqrt(x.^2+y.^2)/akl)*2.*x./(2*akl*sqrt(x.^2+y.^2)); % x-component of the gradient
+    Qy = -Rkl*exp(-sqrt(x.^2+y.^2)/rkl)*2.*y./(2*rkl*sqrt(x.^2+y.^2))+Akl*exp(-sqrt(x.^2+y.^2)/akl)*2.*y./(2*akl*sqrt(x.^2+y.^2)); % y-component of the gradient
+
+    force = [Qx,Qy];
 end

@@ -27,15 +27,14 @@ default_param = abmset('ntype',2, ...
                        'b', 300, ...
                        'hmwidth', 100, ...
                        'plot_init', false);
-                   
-if nargin == 1 % assume only 'totd' given
-    assert(isinteger(totd) & totd < 1000)
-    param = default_param;
-elseif nargin == 0 % 'totd' not even given
+
+param = default_param;
+if nargin == 0 % 'totd' not even given
     % Number of days in reality as well as number of timesteps in the
     % Forward Euler stepping scheme with dt = 1.
-    totd = 20; % At least 20, due to zebrafish biology
-    param = default_param;
+    totd = 20; % At least 20, due to zebrafish biology    
+elseif nargin == 1 % assume only 'totd' given
+    assert(isnumeric(totd) & totd < 1000)
 else % assume the third argument onwards modify the default parameters
     param = abmset(default_param, varargin);
 end
@@ -128,44 +127,56 @@ S(1).domsize = [domx, domy];
 S(1).pos = {pm,px}; % pm = positions of melano, px = positions of xantho
 
 %% 3. Main loop
-for indt = 1:totd+1
-    tic;
+for indt = 1:totd % it was totd+1 for unknown reasons.
+    fprintf('Day %d begins... \n', indt)
+    fprintf('Domain sizes: (%d, %d)\n', domx, domy)
+    fprintf('Number of cells: (%d, %d)\n', length(pm), length(px))
+    tstart_main = tic;
     
     % find out how many life cells of each type we have
     nm = size(pm,1);
     nx = size(px,1);
     nall = [nm, nx];
-
     
     % nposall, nbpos, indxdth stores intermediate values to prepare for real update
     nposall = {pm,px};
     
-    % update cell movement
+    fprintf("Computing cell movement...\n")
+    tic
     for indi = 1:ntype
         if ~isempty(nposall{indi}) % if there are nonzero number of type indi cells
             nposall{indi} = fnmove(domx,domy,nposall{1},nposall{2},rall,nall,indi); 
         end
     end
+    toc;
    
-    % update newborn cell birth/division
+    fprintf("Computing newborn cell birth/division...\n")
+    tic;
     nbpos = cell(1,ntype);
     for indi = 1:ntype
         nbpos{indi} = fnbirth(domx,domy,pm,px,rall,indi,par_birth,gammas,indt);
     end
+    toc;
     
-    % update cell death 
+    fprintf("Computing cell death ...\n")
+    tic;
     indxdth = cell(1,ntype);
     for indi = 1:ntype
             % return the indexes of cell that undergo cell death
         indxdth{indi} = fndeath(pm,px,rall,indi,gammas,dpar); % return indices
     end
-    
-    % after all calculations, update the status of each type of cells
-    indxcov_new = cell(1,ntype);
-    cov_pos = cell(1,ntype);
-    cov_to = [1 3 2 5 4];
+    toc;
 
-    %% Real update
+    
+%     % after all calculations, update the status of each type of cells
+%     indxcov_new = cell(1,ntype);
+%     cov_pos = cell(1,ntype);
+%     cov_to = [1 3 2 5 4];
+
+    
+
+    fprintf("Real update of birth, death and movement data...\n") 
+    tic;
     for indi = 1:ntype
         tempposi = nposall{indi};
         tempposi = [tempposi; nbpos{indi}]; % add location of new born cells
@@ -175,12 +186,14 @@ for indt = 1:totd+1
             nposall{indi} = [];
         end
     end
-
+    
     % assign new positions to the position vector
     pm = nposall{1};
     px = nposall{2};
+    toc
 
-    %%%%%%%%%%%%% update domain growth
+    fprintf("Updating locations due to domain growth...\n")
+    tic;
     domx = domx + domxt; % add 130um to width and height everyday
     domy = domy + domyt; % % add 130um to width and height everyday
     strx = domx/(domx-domxt); % stretch rate, minus the growth of one day, compared with the previous day
@@ -190,16 +203,15 @@ for indt = 1:totd+1
     % change number of cells
     pm = pm .* repmat([strx, stry],size(pm,1),size(pm,2)/2); % the the 3rd argument of repmat is artificial to ensure this works for empty pm
     px = px .* repmat([strx, stry],size(px,1),size(px,2)/2);
+    toc;
     
-    % stores cell locations everyday... for storage only 
+    fprintf("Storing cell locatinos...\n")
+    tic;
     S(indt+1).domsize = [domx domy]; % index 1 is used for initial condition 
     S(indt+1).pos = {pm,px};
-    
-    fprintf('Day %d\n', indt)
-    fprintf('Domain sizes: (%d, %d)\n', domx, domy)
-    fprintf('Number of cells: (%d, %d)\n', length(pm), length(px))
+    toc;
 
-    toc
+    fprintf("This time step took %.3g seconds.\n\n",toc(tstart_main))
 
 end % simulation has finished
 

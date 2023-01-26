@@ -27,8 +27,10 @@ rxx = 10;
 Axx = 0;
 axx = 1;
 
-
 dt = 1;
+fprintf("   Working on cell type %i.\n", indx)
+fprintf("   Step 1 - randomizing... ")
+tic;
 
 allposcell = {pm,px};
 curtype = allposcell{indx}; % current type, n by 2
@@ -38,9 +40,11 @@ newpos = zeros(size(curtype));
 randorder = 1:size(curtype,1);
 randorder = randorder(randperm(length(randorder)));
 
+fprintf("   Took %.2g seconds.\n" ,toc);
 
 
-
+fprintf("   Step 2 - computing force function and move... ")
+tic;
 for ind = 1:size(curtype,1)
     
     indi = randorder(ind);
@@ -57,12 +61,15 @@ for ind = 1:size(curtype,1)
         % When distance = Lmm, force = 0; if dist < Lmm, force >0
         Fmm = Qkl(cellipos, noipos, Rmm, rmm, Amm, amm); 
         Fxm = Qkl(cellipos, px, Rxm, rxm, Axm, axm);
-        diffpos = -sum(Fmm,1) - sum(Fxm,1);
+%         diffpos = -sum(Fmm,1) - sum(Fxm,1);
+        diffpos = -sum(Fmm) - sum(Fxm);
         
     elseif indx == 2
+        % movement of x cells...
         Fxx   = Qkl(cellipos, noipos, Rxx, rxx, Axx, axx);
         Fmx   = Qkl(cellipos, pm, Rmx, rmx, Amx, amx);
-        diffpos = -sum(Fxx,1) - sum(Fmx,1);             
+%        diffpos = -sum(Fxx,1) - sum(Fmx,1);             
+        diffpos = -sum(Fxx) - sum(Fmx);             
     end
     
     % first update the location of the current cell
@@ -82,4 +89,7 @@ for ind = 1:size(curtype,1)
         ncelli(2) = -ncelli(2);
     end
     newpos(indi,:) = ncelli;
+    
 end
+
+fprintf("   Took %.2g seconds.\n", toc);
