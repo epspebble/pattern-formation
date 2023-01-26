@@ -26,7 +26,9 @@ ntype = 2;
 
 domx = 2000; % initialize domain
 domy = 1000; %initialize domain
-totd = 50;
+
+totd = 20; % today number of days, tried 20, but on Volkening 2015, Fig 14, up to 150 days
+
 domxt = 130; %(16-domx/1000)*10^3/totd; % 7 is the initial size, 16 is the destinate size
 domyt = 130;% (3-domy/1000)*10^3/totd; % 1 is the initial size, 16 is the destinate size
 
