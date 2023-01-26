@@ -129,6 +129,7 @@ S(1).pos = {pm,px}; % pm = positions of melano, px = positions of xantho
 
 %% 3. Main loop
 for indt = 1:totd+1
+    tic;
     
     % find out how many life cells of each type we have
     nm = size(pm,1);
@@ -193,6 +194,13 @@ for indt = 1:totd+1
     % stores cell locations everyday... for storage only 
     S(indt+1).domsize = [domx domy]; % index 1 is used for initial condition 
     S(indt+1).pos = {pm,px};
+    
+    fprintf('Day %d\n', indt)
+    fprintf('Domain sizes: (%d, %d)\n', domx, domy)
+    fprintf('Number of cells: (%d, %d)\n', length(pm), length(px))
+
+    toc
+
 end % simulation has finished
 
 % S contains all simulation data, totd, ntype can be inferred.
