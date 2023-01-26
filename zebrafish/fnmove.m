@@ -3,11 +3,14 @@ function newpos = fnmove(domx,domy,pm,px,rall,nall,indx)
 % px: position of all x cells
 % indx: the indx-th cell of the current cell type
 
+
+% Jia inferred from Supp. Fig. 2 by manual matching. There is no biological
+% basis for such repulsive force. It is due to an empirical observation
+% that these cells move away from each other.
 Rxm = 11000;
 rxm = 20;
 Axm = 0;
 axm = 1;
-
 
 Rmm = 5000;
 rmm = 20;
@@ -63,7 +66,7 @@ for ind = 1:size(curtype,1)
     end
     
     % first update the location of the current cell
-    ncelli = cellipos + diffpos*dt; 
+    ncelli = cellipos + diffpos*dt; % forward Euler, dt=1 is fixed.
   
     % if the new location overlaps with other cell, consider shorten the
     % distance of movement
