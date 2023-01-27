@@ -146,30 +146,30 @@ for indt = 1:totd % it was totd+1 for unknown reasons.
     nposall = {pm,px};
     
     fprintf("Computing cell movement...\n")
-    tic
+    s1 = tic;
     for indi = 1:ntype
         if ~isempty(nposall{indi}) % if there are nonzero number of type indi cells
             nposall{indi} = fnmove(domx,domy,nposall{1},nposall{2},rall,nall,indi); 
         end
     end
-    toc;
+    toc(s1);
    
     fprintf("Computing newborn cell birth/division...\n")
-    tic;
+    s2 = tic;
     nbpos = cell(1,ntype);
     for indi = 1:ntype
         nbpos{indi} = fnbirth(domx,domy,pm,px,rall,indi,par_birth,gammas,indt);
     end
-    toc;
+    toc(s2);
     
     fprintf("Computing cell death ...\n")
-    tic;
+    s3 = tic;
     indxdth = cell(1,ntype);
     for indi = 1:ntype
             % return the indexes of cell that undergo cell death
         indxdth{indi} = fndeath(pm,px,rall,indi,gammas,dpar); % return indices
     end
-    toc;
+    toc(s3);
 
     
 %     % after all calculations, update the status of each type of cells
