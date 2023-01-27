@@ -7,7 +7,7 @@ function run2(n)
 
 a = 2000+mod(n-1,11)*500;
 b = 300+floor((n-1)/11)*10;
-S = abmrun(10,"a",a,"b",b);
+S = abmrun(50,"a",a,"b",b);
 
 fn = sprintf("run2_a%i_b%i",a,b);
 fprintf("Saving data to %s.mat ...\n",fn);
