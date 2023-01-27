@@ -1,3 +1,10 @@
 % Test run on a remote cluster for a single job.
-S = abmrun(20)
-save(S,"run1.mat")
+runst = tic;
+
+S = abmrun(50,"a",3500);
+fprintf("\n\n\nFinished simulation.\n")
+toc(runst)
+
+fn = "run2_a3500";
+fprintf("Saving data to %s".fn)
+save(fn,"S")
