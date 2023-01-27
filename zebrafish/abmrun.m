@@ -1,5 +1,7 @@
 function S = abmrun(totd,varargin)
 
+run_start = tic;
+
 %% 1. Setting up parameters.
 default_param = abmset('ntype',2, ...
                        'domx',2000, ...
@@ -218,6 +220,10 @@ for indt = 1:totd % it was totd+1 for unknown reasons.
     fprintf("This time step took %.3g seconds.\n\n",toc(tstart_main))
 
 end % simulation has finished
+
+fprintf("The whole run for %i timesteps took %.3g seconds.\n",totd, toc(run_start))
+fprintf("User inputs:\n")
+disp(varargin)
 
 % S contains all simulation data, totd, ntype can be inferred.
 
