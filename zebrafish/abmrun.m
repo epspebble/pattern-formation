@@ -29,6 +29,7 @@ default_param = abmset('ntype',2, ...
                        'plot_init', false);
 
 param = default_param;
+
 if nargin == 0 % 'totd' not even given
     % Number of days in reality as well as number of timesteps in the
     % Forward Euler stepping scheme with dt = 1.
@@ -36,9 +37,9 @@ if nargin == 0 % 'totd' not even given
 elseif nargin == 1 % assume only 'totd' given
     assert(isnumeric(totd) & totd < 1000)
 else % assume the third argument onwards modify the default parameters
-    param = abmset(default_param, varargin);
+    param = abmset(default_param, varargin{:});
 end
-    
+
 ntype = param.ntype;
 domx = param.domx; 
 domy = param.domy;
@@ -128,6 +129,9 @@ S(1).pos = {pm,px}; % pm = positions of melano, px = positions of xantho
 
 %% 3. Main loop
 for indt = 1:totd % it was totd+1 for unknown reasons.
+%     % spot check whether argument changes took effect
+%      fprintf('DEBUG: nu = %g\n',nu) 
+    
     fprintf('Day %d begins... \n', indt)
     fprintf('Domain sizes: (%d, %d)\n', domx, domy)
     fprintf('Number of cells: (%d, %d)\n', length(pm), length(px))

@@ -137,7 +137,7 @@ while i <= nargin
   end
   if ~isempty(arg)                      % [] is a valid options argument
     if ~isa(arg,'struct')
-      error(message('MATLAB:abmset:NoPropNameOrStruct', i));
+      error(message('MATLAB:odeset:NoPropNameOrStruct', i));
     end
     for j = 1:m
       if any(strcmp(fieldnames(arg),deblank(Names(j,:))))
@@ -161,7 +161,7 @@ end
 
 % A finite state machine to parse name-value pairs.
 if rem(nargin-i+1,2) ~= 0
-  error(message('MATLAB:abmset:ArgNameValueMismatch'));
+  error(message('MATLAB:odeset:ArgNameValueMismatch'));
 end
 expectval = 0;                          % start expecting a name, not a value
 while i <= nargin
@@ -169,13 +169,13 @@ while i <= nargin
     
   if ~expectval
     if ~ischar(arg)
-      error(message('MATLAB:abmset:NoPropName', i));
+      error(message('MATLAB:odeset:NoPropName', i));
     end
     
     lowArg = lower(arg);
     j = strmatch(lowArg,names);
     if isempty(j)                       % if no matches
-      error(message('MATLAB:abmset:InvalidPropName', arg));
+      error(message('MATLAB:odeset:InvalidPropName', arg));
     elseif length(j) > 1                % if more than one match
       % Check for any exact matches (in case any names are subsets of others)
       k = strmatch(lowArg,names,'exact');
@@ -186,7 +186,7 @@ while i <= nargin
         for k = j(2:length(j))'
                 matches = [matches ', ' deblank(Names(k,:))]; %#ok<AGROW>
         end
-            error(message('MATLAB:abmset:AmbiguousPropName',arg,matches));
+            error(message('MATLAB:odeset:AmbiguousPropName',arg,matches));
       end
     end
     expectval = 1;                      % we expect a value next
@@ -200,5 +200,5 @@ while i <= nargin
 end
 
 if expectval
-  error(message('MATLAB:abmset:NoValueForProp', arg));
+  error(message('MATLAB:odeset:NoValueForProp', arg));
 end
