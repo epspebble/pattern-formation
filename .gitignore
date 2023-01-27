@@ -1,2 +1,3 @@
 slurm/log/**
 *.asv
+**/.DS_Store
