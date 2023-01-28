@@ -9,8 +9,6 @@ phi_1 = par_birth(5);
 phi_2 = par_birth(6);
 kappa = par_birth(7);
 d_rand = par_birth(8);
-a = par_birth(9);
-b = par_birth(10);
 
 gamma_loc = gammas(1);
 gamma_long_inner = gammas(2);
@@ -24,14 +22,8 @@ elseif indx == 2
     brate = 0.005;
 end
 
-% indt = number of days (20), ndiff = 13000, the main loop.
-
-% ndiff = a + indt*b, try a in [2000,8000], b = [300,500]
-% ndiff = 3000+indt*500; 
-% ndiff = 6000+indt*500; 
-ndiff = a+indt*b; % not specified in the paper 
-
-for ind = 1:ndiff % all new cells
+ndiff = 2000+indt*200; % not specified in the paper 
+for ind = 1:ndiff
     xypos = zeros(1,2); % tentative position of new born cells
     xypos(1,1) = (domx-2*rall(indx))*rand(1,1) + rall(indx); % domx, length of the domain in the x direction
     xypos(1,2) = (domy-2*rall(indx))*rand(1,1) + rall(indx); % domy, length of the domain in the y direction    birth_m = dists(xypos, pm);
@@ -43,13 +35,12 @@ for ind = 1:ndiff % all new cells
         num_podia_mnb = sum(dsmm>gamma_long_inner & dsmm<gamma_long_outer);
         num_podia_xnb = sum(dsxm>gamma_long_inner & dsxm<gamma_long_outer);
         cond1 = num_loc_mnb>alpha*num_loc_xnb;    
-       
-        % differs from paper, the next line follows description, not paper.
         cond2 = num_podia_xnb>beta*num_podia_mnb; % wrong expression in the supplement
-        
         num_loc_mnb = sum(dsmm<d_crowd);
         num_loc_xnb = sum(dsxm<d_crowd);
         cond3 = num_loc_xnb + num_loc_mnb < eta;
+        r = rand();
+        cond4 = r<=brate;
     elseif indx == 2
         dsmm = dists(xypos, pm);
         dsxm = dists(xypos, px);
@@ -58,36 +49,36 @@ for ind = 1:ndiff % all new cells
         num_podia_mnb = sum(dsmm>gamma_long_inner & dsmm<gamma_long_outer);
         num_podia_xnb = sum(dsxm>gamma_long_inner & dsxm<gamma_long_outer);
         cond1 = num_loc_xnb>phi_1*num_loc_mnb;    
-        % differs from paper, the next line follows description, not paper.
         cond2 = num_podia_mnb>phi_2*num_podia_xnb; % might be wrong here according to the description in the paper
-        
         num_loc_mnb = sum(dsmm<d_crowd);
         num_loc_xnb = sum(dsxm<d_crowd);
         cond3 = num_loc_xnb + num_loc_mnb < kappa;
+        r = rand();
+        cond4 = r<=brate;
     end
-    if cond1 && cond2 && cond3
+    if (cond1 && cond2 && cond3 )|| (cond4  && sum(dsmm<d_rand)==0 && sum(dsxm<d_rand) == 0)
        nposlist = [nposlist;xypos];
     end
 end
     
     
-nnew = 500;
-for i = 1:nnew
-    r = rand();
-    xypos = zeros(1,2); % tentative position of new born cells
-    xypos(1,1) = (domx-2*rall(indx))*rand(1,1) + rall(indx); % domx, length of the domain in the x direction
-    xypos(1,2) = (domy-2*rall(indx))*rand(1,1) + rall(indx); % domy, length of the domain in the y direction    birth_m = dists(xypos, pm);
-    dsmm = dists(xypos, pm);
-    dsxm = dists(xypos, px);
-    if indx == 1 && sum(dsmm<d_rand)==0 && sum(dsxm<d_rand) == 0% type m 
-       if r<=brate
-            % new cells because of cell division
-           nposlist = [nposlist;xypos];
-       end
-    elseif indx == 2 && sum(dsmm<d_rand)==0 && sum(dsxm<d_rand) == 0 % type x 
-       if r<=brate
-          nposlist = [nposlist;xypos];
-       end
-    end
-end
+% nnew = 100;
+% for i = 1:nnew
+%     r = rand();
+%     xypos = zeros(1,2); % tentative position of new born cells
+%     xypos(1,1) = (domx-2*rall(indx))*rand(1,1) + rall(indx); % domx, length of the domain in the x direction
+%     xypos(1,2) = (domy-2*rall(indx))*rand(1,1) + rall(indx); % domy, length of the domain in the y direction    birth_m = dists(xypos, pm);
+%     dsmm = dists(xypos, pm);
+%     dsxm = dists(xypos, px);
+%     if indx == 1 && sum(dsmm<d_rand)==0 && sum(dsxm<d_rand) == 0% type m 
+%        if r<=brate
+%             % new cells because of cell division
+%            nposlist = [nposlist;xypos];
+%        end
+%     elseif indx == 2 && sum(dsmm<d_rand)==0 && sum(dsxm<d_rand) == 0 % type x 
+%        if r<=brate
+%           nposlist = [nposlist;xypos];
+%        end
+%     end
+% end
 

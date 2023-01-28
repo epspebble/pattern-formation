@@ -26,9 +26,7 @@ ntype = 2;
 
 domx = 2000; % initialize domain
 domy = 1000; %initialize domain
-
-totd = 20; % today number of days, tried 20, but on Volkening 2015, Fig 14, up to 150 days
-
+totd = 50;
 domxt = 130; %(16-domx/1000)*10^3/totd; % 7 is the initial size, 16 is the destinate size
 domyt = 130;% (3-domy/1000)*10^3/totd; % 1 is the initial size, 16 is the destinate size
 
@@ -38,8 +36,8 @@ rall = [rm, rx];
 
 
 
-gamma_loc = 75;
-gamma_long_inner = 318;
+gamma_loc = 75;%75;
+gamma_long_inner = 318;%318;
 gamma_long_outer = gamma_long_inner + 25;
 gammas = [gamma_loc, gamma_long_inner,gamma_long_outer];
 
@@ -105,8 +103,6 @@ clc
 %%%%%%%% Store all of the information for ploting purpose later
 S(1).domsize = [domx, domy];
 S(1).pos = {pm,px};
-domx = domx;
-domy = domy;
 
 celltype = {'m','x'};
 for indt = 1:totd+1
